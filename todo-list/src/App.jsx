@@ -40,17 +40,23 @@ function App() {
       </form>
      </div>
      <div>
-      {tasks.map((x) => (
-        <div key={x.id}>
-          <input
-            type='checkbox'
-            checked={x.done}
-            onChange={() => toggleTask(x.id)}
-          />
-          {x.text}
-          <button onClick={() => removeTask(x.id)}>x</button>
-        </div>
-      ))}
+      <ul>
+        {tasks.map((x) => (
+          <li key={x.id} className='flex justify-between items-center border p-2 rounded'>
+            <label className="flex items-center gap-2" >
+              <input
+                type='checkbox'
+                checked={x.done}
+                onChange={() => toggleTask(x.id)}
+              />
+              <span className={x.done ? "line-through text-gray-400" : ""}>
+                {x.text}
+              </span>
+            </label>
+            <button onClick={() => removeTask(x.id)}>x</button>
+          </li>
+        ))}
+      </ul>
      </div>
     </>
   )
