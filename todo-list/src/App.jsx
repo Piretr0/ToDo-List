@@ -10,6 +10,7 @@ function App() {
   })
 
   const [text, setText] = useState("")
+  const [date, setDate] = useState("")
 
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState("")
@@ -25,12 +26,14 @@ function App() {
     if (!text.trim()) return
     setTasks([{
       id: Date.now(),
-      text: text,
-      done: false
+      text,
+      done: false,
+      date
     },
     ...tasks
   ])
   setText("")
+  setDate("")
   }
   const toggleTask = (id) => {
     setTasks(tasks.map(x => x.id === id ? { ...x, done: !x.done } : x))
@@ -51,6 +54,9 @@ function App() {
     setEditingText("")
   }
 
+   const removeAllCheckedTask = () => {
+    setTasks(tasks.filter(x => x.done !== true))
+  }
   
 
   return (
@@ -58,55 +64,93 @@ function App() {
      <div>
       <div>
         <h1 className=' text-2xl'>To do list</h1>
-        <form onSubmit={addTask} >
+        <form onSubmit={addTask} className=' flex '>
           <input 
             value = {text}
             onChange={(e) => setText(e.target.value)}
+            className='w-full border p-1 rounded'
           />
-          <button> Add </button>
+          <input 
+            type='date'
+            value = {date}
+            onChange={(e) => setDate(e.target.value)}
+            className='border p-0 rounded w-[110px] '
+          />
+          <button className="border px-3 py-1 rounded bg-blue-500 text-white ml-2"> Add </button>
         </form>
       </div>
      
-     <div>
-      <ul>
-        {tasks.map((x) => (
-          <li key={x.id} className='grid grid-cols-[1rem_auto_2rem] justify-stretch border p-2 rounded'>
+      <div>
+        <ul>
+          {tasks.map((x) => (
+            <li key={x.id} className='flex items-center border p-2 rounded'>
 
-            <label className="flex items-center gap-2" >
-              <input
-                type='checkbox'
-                checked={x.done}
-                onChange={() => toggleTask(x.id)}
-              />
-            </label>
+              <label className=" flex items-center mr-2" >
+                <input
+                  type='checkbox'
+                  checked={x.done}
+                  onChange={() => toggleTask(x.id)}
+                />
+              </label>
+              
+              {editingId === x.id ? (
+                <div className="flex flex-1 items-center">
+                  <input
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    onBlur={(e) => saveEditing(x.id, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveEditing(x.id, e.target.value)
+                      if (e.key === "Escape") setEditingId(null)
+                    }}
+                    autoFocus
+                    className="border rounded px-1 w-full min-w-[120px]"
+                  />
+                  <button 
+                    className="border rounded px-1 ml-2 relative group" 
+                    onClick={() => removeTask(x.id)}
+                  >
+                    X
+                    <span className="absolute left-1/2 -translate-x-1/2 -top-7 bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition">
+                      Remove
+                    </span>
+                  </button>
+                </div>
+                
+              ) : (
+                <div className="flex-1">
+                  <span
+                  className={x.done ? " w-full line-through text-gray-400 cursor-pointer" : "cursor-pointer"}
+                  onClick={() => startEditing(x.id, x.text)}
+                >
+                  {x.text}
+                </span>
+                </div>
+              )}
+              
+              { x.date && (
+                <span
+                  className={`text-sm ml-2 ${
+                    new Date(x.date) < new Date(new Date().toISOString().slice(0, 10))
+                      ? "text-red-500"
+                      : "text-gray-500"
+                  }`}
+                >
+                  (deadline: <br /> {x.date})
+                </span>
+              )}
+              
+              
+              
 
-            {editingId === x.id ? (
-              <input
-                value={editingText}
-                onChange={(e) => setEditingText(e.target.value)}
-                onBlur={(e) => saveEditing(x.id, e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEditing(x.id, e.target.value)
-                  if (e.key === "Escape") setEditingId(null)
-                }}
-                autoFocus
-                className="border rounded px-1"
-              />
-            ) : (
-              <span
-                className={x.done ? "line-through text-gray-400 cursor-pointer" : "cursor-pointer"}
-                onClick={() => startEditing(x.id, x.text)}
-              >
-                {x.text}
-              </span>
-            )}
-            
-            <button className="border rounded px-1" onClick={() => removeTask(x.id)}>X</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+          <button className="border rounded px-2" onClick={() => removeAllCheckedTask()}>Remove complited</button>
+      </div>
 
-          </li>
-        ))}
-      </ul>
-     </div>
      </div>
     </>
   )
