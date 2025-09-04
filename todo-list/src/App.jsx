@@ -15,6 +15,11 @@ function App() {
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState("")
 
+  const [sortBy, setSortBy] = useState("added");
+
+
+
+
   useEffect(()=> {
     localStorage.setItem("tasks",JSON.stringify(tasks))
   },[tasks]
@@ -57,13 +62,38 @@ function App() {
    const removeAllCheckedTask = () => {
     setTasks(tasks.filter(x => x.done !== true))
   }
+
+  const sortTasks = (tasksList, sortBy) => {
+  return [...tasksList].sort((a, b) => {
+    if (sortBy === "added") {
+      return b.id - a.id;
+    } else if (sortBy === "deadline") {
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(a.date) - new Date(b.date);
+    }
+    return 0;
+  });
+  };
+
+  const handleSortChange = (newSort) => {
+    setSortBy(newSort);
+    setTasks(prevTasks => sortTasks(prevTasks, newSort));
+  };
   
 
   return (
     <>
      <div>
+      
       <div>
+        <div className='flex flex-row justify-center mb-4'>
         <h1 className=' text-2xl'>To do list</h1>
+        <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
+        <option value="added">Added</option>
+        <option value="deadline">Deadline</option>
+      </select>
+      </div>
         <form onSubmit={addTask} className=' flex '>
           <input 
             value = {text}
@@ -131,7 +161,7 @@ function App() {
               { x.date && (
                 <span
                   className={`text-sm ml-2 ${
-                    new Date(x.date) < new Date(new Date().toISOString().slice(0, 10))
+                    new Date(x.date) < new Date(new Date().toISOString().slice(0, 10)) && !x.done
                       ? "text-red-500"
                       : "text-gray-500"
                   }`}
