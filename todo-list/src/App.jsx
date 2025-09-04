@@ -9,8 +9,9 @@ function App() {
     return load ? JSON.parse(load) : []
   })
 
-  const [text, setText] = useState("")
+  const [taskName, setTaskName] = useState("")
   const [date, setDate] = useState("")
+  const [description, setDescription] = useState("")
 
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState("")
@@ -28,17 +29,19 @@ function App() {
 
   const addTask = (e) => {
     e.preventDefault()
-    if (!text.trim()) return
+    if (!taskName.trim()) return
     setTasks([{
       id: Date.now(),
-      text,
+      taskName,
+      description,
       done: false,
       date
     },
     ...tasks
   ])
-  setText("")
+  setTaskName("")
   setDate("")
+  setDescription("")
   }
   const toggleTask = (id) => {
     setTasks(tasks.map(x => x.id === id ? { ...x, done: !x.done } : x))
@@ -48,23 +51,26 @@ function App() {
     setTasks(tasks.filter(x => x.id !== id))
   }
 
+    const removeAllCheckedTask = () => {
+    setTasks(tasks.filter(x => x.done !== true))
+  }
+
   const startEditing = (id, currentText) => {
     setEditingId(id)
     setEditingText(currentText)
   }
 
   const saveEditing = (id, changedText) => {
-    setTasks(tasks.map(x => x.id === id ? { ...x, text: changedText } : x))
+    setTasks(tasks.map(x => x.id === id ? { ...x, taskName: changedText } : x))
     setEditingId(null)
     setEditingText("")
   }
 
-   const removeAllCheckedTask = () => {
-    setTasks(tasks.filter(x => x.done !== true))
-  }
+ 
 
   const sortTasks = (tasksList, sortBy) => {
-  return [...tasksList].sort((a, b) => {
+  return [...tasksList]
+  .sort((a, b) => {
     if (sortBy === "added") {
       return b.id - a.id;
     } else if (sortBy === "deadline") {
@@ -73,7 +79,8 @@ function App() {
       return new Date(a.date) - new Date(b.date);
     }
     return 0;
-  });
+  })
+  .sort((a, b) => a.done - b.done);
   };
 
   const handleSortChange = (newSort) => {
@@ -90,23 +97,35 @@ function App() {
         <div className='flex flex-row justify-center mb-4'>
         <h1 className=' text-2xl'>To do list</h1>
         <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
-        <option value="added">Added</option>
-        <option value="deadline">Deadline</option>
-      </select>
+          <option value="added">Added</option>
+          <option value="deadline">Deadline</option>
+        </select>
       </div>
-        <form onSubmit={addTask} className=' flex '>
-          <input 
-            value = {text}
-            onChange={(e) => setText(e.target.value)}
-            className='w-full border p-1 rounded'
-          />
-          <input 
-            type='date'
-            value = {date}
-            onChange={(e) => setDate(e.target.value)}
-            className='border p-0 rounded w-[110px] '
-          />
-          <button className="border px-3 py-1 rounded bg-blue-500 text-white ml-2"> Add </button>
+        <form onSubmit={addTask}>
+          <div className='flex mb-2 gap-2'>
+            <input 
+              value = {taskName}
+              placeholder='Name task'
+              onChange={(e) => setTaskName(e.target.value)}
+              className='w-full border p-1 rounded'
+            />
+            <input 
+              type='date'
+              value = {date}
+              onChange={(e) => setDate(e.target.value)}
+              className='border p-0 rounded w-[110px] '
+            />
+          </div>
+          <div className='flex full'>
+            <textarea 
+              placeholder='Description ...' 
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className='w-full border p-1 rounded'
+              />
+            <button className="border px-3 py-1 rounded bg-blue-500 text-white ml-2"> Add </button>
+          </div>
+          
         </form>
       </div>
      
@@ -151,9 +170,9 @@ function App() {
                 <div className="flex-1">
                   <span
                   className={x.done ? " w-full line-through text-gray-400 cursor-pointer" : "cursor-pointer"}
-                  onClick={() => startEditing(x.id, x.text)}
+                  onClick={() => startEditing(x.id, x.taskName)}
                 >
-                  {x.text}
+                  {x.taskName}
                 </span>
                 </div>
               )}
