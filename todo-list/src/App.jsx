@@ -35,7 +35,7 @@ function App() {
       taskName,
       description,
       done: false,
-      date
+      date: date ? date : "none"
     },
     ...tasks
   ])
@@ -51,7 +51,7 @@ function App() {
     setTasks(tasks.filter(x => x.id !== id))
   }
 
-    const removeAllCheckedTask = () => {
+  const removeAllCheckedTask = () => {
     setTasks(tasks.filter(x => x.done !== true))
   }
 
@@ -108,6 +108,7 @@ function App() {
               placeholder='Name task'
               onChange={(e) => setTaskName(e.target.value)}
               className='w-full border p-1 rounded'
+              required
             />
             <input 
               type='date'
@@ -147,7 +148,6 @@ function App() {
                   <input
                     value={editingText}
                     onChange={(e) => setEditingText(e.target.value)}
-                    onBlur={(e) => saveEditing(x.id, e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") saveEditing(x.id, e.target.value)
                       if (e.key === "Escape") setEditingId(null)
