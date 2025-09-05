@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 import './App.css'
 
@@ -17,7 +17,7 @@ function App() {
   const [editingText, setEditingText] = useState("")
 
   const [sortBy, setSortBy] = useState("added");
-
+  const [isRemoving, setIsRemoving] = useState(false);
 
 
 
@@ -33,7 +33,7 @@ function App() {
     setTasks([{
       id: Date.now(),
       taskName,
-      description,
+      description: description ? description : "",
       done: false,
       date: date ? date : "none"
     },
@@ -61,12 +61,11 @@ function App() {
   }
 
   const saveEditing = (id, changedText) => {
+    if (isRemoving) return;
     setTasks(tasks.map(x => x.id === id ? { ...x, taskName: changedText } : x))
     setEditingId(null)
     setEditingText("")
   }
-
- 
 
   const sortTasks = (tasksList, sortBy) => {
   return [...tasksList]
@@ -74,9 +73,11 @@ function App() {
     if (sortBy === "added") {
       return b.id - a.id;
     } else if (sortBy === "deadline") {
-      if (!a.date) return 1;
-      if (!b.date) return -1;
-      return new Date(a.date) - new Date(b.date);
+      const aDate = a.date === "none" ? null : a.date;
+      const bDate = b.date === "none" ? null : b.date;
+      if (!aDate) return 1;
+      if (!bDate) return -1;
+      return new Date(aDate) - new Date(bDate);
     }
     return 0;
   })
@@ -92,10 +93,9 @@ function App() {
   return (
     <>
      <div>
-      
       <div>
         <div className='flex flex-row justify-center mb-4'>
-        <h1 className=' text-2xl'>To do list</h1>
+        <h1 className=' text-2xl mr-3'>To do list</h1>
         <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
           <option value="added">Added</option>
           <option value="deadline">Deadline</option>
@@ -131,66 +131,87 @@ function App() {
       </div>
      
       <div>
-        <ul>
+        <ul className='flex flex-col'>
           {tasks.map((x) => (
-            <li key={x.id} className='flex items-center border p-2 rounded'>
+            <li key={x.id} className='flex border p-2 rounded'>
+                {/* <div>
+                  <details className='mr-2'>
+                    <summary className='cursor-pointer select-none'></summary>
+                    <p className='border p-2 rounded '>{x.description}</p>
+                  </details>
+                </div>  */}
 
-              <label className=" flex items-center mr-2" >
-                <input
-                  type='checkbox'
-                  checked={x.done}
-                  onChange={() => toggleTask(x.id)}
-                />
-              </label>
-              
-              {editingId === x.id ? (
-                <div className="flex flex-1 items-center">
-                  <input
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") saveEditing(x.id, e.target.value)
-                      if (e.key === "Escape") setEditingId(null)
-                    }}
-                    autoFocus
-                    className="border rounded px-1 w-full min-w-[120px]"
-                  />
-                  <button 
-                    className="border rounded px-1 ml-2 relative group" 
-                    onClick={() => removeTask(x.id)}
-                  >
-                    X
-                    <span className="absolute left-1/2 -translate-x-1/2 -top-7 bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition">
-                      Remove
-                    </span>
-                  </button>
+                {/* Task name */}
+                <div className="flex flex-1 justify-center items-center mr-4">
+                  {editingId === x.id ? (
+                    <div className="flex flex-1 items-center">
+                      <input
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        onBlur={(e) => saveEditing(x.id, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveEditing(x.id, e.target.value)
+                          if (e.key === "Escape") setEditingId(null)
+                        }}
+                        autoFocus
+                        className="border rounded px-1 w-full min-w-[120px]"
+                      />
+                      <button 
+                        className="border rounded px-1 ml-2 relative group" 
+                        onMouseDown={() => setIsRemoving(true)}
+                        onClick={() => {
+                          removeTask(x.id);
+                          setEditingId(null);
+                          setIsRemoving(false);
+                        }}
+                      >
+                        X
+                        <span className="absolute left-1/2 -translate-x-1/2 -top-7 bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition">
+                          Remove
+                        </span>
+                      </button>
+                    </div>
+                  
+                  ) : (
+                    <div className="items-center">
+                      <span
+                      className={x.done ? " w-full line-through text-gray-400 cursor-pointer" : "cursor-pointer"}
+                      onClick={() => startEditing(x.id, x.taskName)}
+                      >
+                        {x.taskName}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                
-              ) : (
-                <div className="flex-1">
-                  <span
-                  className={x.done ? " w-full line-through text-gray-400 cursor-pointer" : "cursor-pointer"}
-                  onClick={() => startEditing(x.id, x.taskName)}
-                >
-                  {x.taskName}
-                </span>
+
+                {/* Deadline and checkbox */}
+                <div className='flex items-center'>
+                {/* Deadline */}
+                  <div className="">
+                    { x.date && (
+                        <span
+                        className={`text-sm ml-2 ${
+                          new Date(x.date) < new Date(new Date().toISOString().slice(0, 10)) && !x.done
+                            ? "text-red-500"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        (deadline: <br /> {x.date})
+                        
+                      </span>
+                    )}
+                  </div>
+                {/* Checkbox */}
+                  <div className='ml-4'>
+                    <label>
+                      <input
+                        type='checkbox'
+                        checked={x.done}
+                        onChange={() => toggleTask(x.id)}
+                      />
+                    </label>
+                  </div>
                 </div>
-              )}
-              
-              { x.date && (
-                <span
-                  className={`text-sm ml-2 ${
-                    new Date(x.date) < new Date(new Date().toISOString().slice(0, 10)) && !x.done
-                      ? "text-red-500"
-                      : "text-gray-500"
-                  }`}
-                >
-                  (deadline: <br /> {x.date})
-                </span>
-              )}
-              
-              
-              
 
             </li>
           ))}
