@@ -19,13 +19,12 @@ function App() {
   const [sortBy, setSortBy] = useState("added");
   const [isRemoving, setIsRemoving] = useState(false);
 
-
+  const [filter, setFilter] = useState("all");
 
   useEffect(()=> {
     localStorage.setItem("tasks",JSON.stringify(tasks))
   },[tasks]
   )
-
 
   const addTask = (e) => {
     e.preventDefault()
@@ -88,19 +87,43 @@ function App() {
     setSortBy(newSort);
     setTasks(prevTasks => sortTasks(prevTasks, newSort));
   };
-  
 
-  return (
-    <>
-     <div>
-      <div>
-        <div className='flex flex-row justify-center mb-4'>
-        <h1 className=' text-2xl mr-3'>To do list</h1>
-        <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
-          <option value="added">Added</option>
-          <option value="deadline">Deadline</option>
-        </select>
+  const filteredTasks = tasks.filter(x => {
+    if (filter === "active") return !x.done;
+    if (filter === "completed") return x.done;
+    return true; // all
+  });
+  const sotredTasks = sortTasks(filteredTasks, sortBy);
+
+  const DivColsetTest = () => {
+    return (
+      <div className="colsetTest flex gap-2">
+        <button
+          className={`chip ${filter === "all" ? "active" : ""}`}
+          onClick={() => setFilter("all")}
+        >
+          All
+        </button>
+        <button
+          className={`chip ${filter === "active" ? "active" : ""}`}
+          onClick={() => setFilter("active")}
+        >
+          Active
+        </button>
+        <button
+          className={`chip ${filter === "completed" ? "active" : ""}`}
+          onClick={() => setFilter("completed")}
+        >
+          Done
+        </button>
       </div>
+    );
+  };
+
+
+  const FormTaskAdd = ()=>{
+    return (
+      <div>
         <form onSubmit={addTask}>
           <div className='flex mb-2 gap-2'>
             <input 
@@ -129,10 +152,14 @@ function App() {
           
         </form>
       </div>
-     
+    )
+  }
+
+  const TaskMap = ()=>{
+    return(
       <div>
         <ul className='flex flex-col'>
-          {tasks.map((x) => (
+          {sotredTasks.map((x) => (
             <li key={x.id} className='flex border p-2 rounded'>
                 {/* <div>
                   <details className='mr-2'>
@@ -217,6 +244,27 @@ function App() {
           ))}
         </ul>
       </div>
+    )
+  }
+
+
+  
+
+  return (
+    <>
+     <div>
+        <DivColsetTest/>
+        <div className='flex flex-row justify-center mb-4'>
+          <h1 className=' text-2xl mr-3'>To do list</h1>
+          <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
+            <option value="added">Added</option>
+            <option value="deadline">Deadline</option>
+          </select>
+        </div>
+        <FormTaskAdd/>
+      
+        <TaskMap/>
+      
       <div>
           <button className="border rounded px-2" onClick={() => removeAllCheckedTask()}>Remove complited</button>
       </div>
