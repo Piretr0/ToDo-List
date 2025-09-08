@@ -16,10 +16,9 @@ function App() {
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState("")
 
-  const [sortBy, setSortBy] = useState("added");
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const [filter, setFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("added");
 
   useEffect(()=> {
     localStorage.setItem("tasks",JSON.stringify(tasks))
@@ -83,39 +82,19 @@ function App() {
   .sort((a, b) => a.done - b.done);
   };
 
+
+
   const handleSortChange = (newSort) => {
     setSortBy(newSort);
     setTasks(prevTasks => sortTasks(prevTasks, newSort));
   };
 
-  const filteredTasks = tasks.filter(x => {
-    if (filter === "active") return !x.done;
-    if (filter === "completed") return x.done;
-    return true; // all
-  });
-  const sotredTasks = sortTasks(filteredTasks, sortBy);
-
   const DivColsetTest = () => {
     return (
       <div className="colsetTest flex gap-2">
-        <button
-          className={`chip ${filter === "all" ? "active" : ""}`}
-          onClick={() => setFilter("all")}
-        >
-          All
-        </button>
-        <button
-          className={`chip ${filter === "active" ? "active" : ""}`}
-          onClick={() => setFilter("active")}
-        >
-          Active
-        </button>
-        <button
-          className={`chip ${filter === "completed" ? "active" : ""}`}
-          onClick={() => setFilter("completed")}
-        >
-          Done
-        </button>
+        <button onClick={() => handleFilterChange("all")}>All</button>
+        <button onClick={() => handleFilterChange("active")}>Active</button>
+        <button onClick={() => handleFilterChange("completed")}>Done</button>
       </div>
     );
   };
@@ -159,7 +138,7 @@ function App() {
     return(
       <div>
         <ul className='flex flex-col'>
-          {sotredTasks.map((x) => (
+          {tasks.map((x) => (
             <li key={x.id} className='flex border p-2 rounded'>
                 {/* <div>
                   <details className='mr-2'>
@@ -216,15 +195,16 @@ function App() {
                 {/* Deadline */}
                   <div className="">
                     { x.date && (
-                        <span
+                      <span
                         className={`text-sm ml-2 ${
-                          new Date(x.date) < new Date(new Date().toISOString().slice(0, 10)) && !x.done
-                            ? "text-red-500"
-                            : "text-gray-500"
+                          x.done
+                            ? "text-gray-500" 
+                            : new Date(x.date) < new Date(new Date().toISOString().slice(0, 10))
+                              ? "text-red-500" 
+                              : "text-green-500" 
                         }`}
                       >
                         (deadline: <br /> {x.date})
-                        
                       </span>
                     )}
                   </div>
