@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 import './App.css'
 
@@ -9,43 +9,39 @@ function App() {
     return load ? JSON.parse(load) : []
   })
 
-  const [taskName, setTaskName] = useState("")
-  const [date, setDate] = useState("")
-  const [description, setDescription] = useState("")
-
   const [editingId, setEditingId] = useState(null)
   const [editingText, setEditingText] = useState("")
 
-  const [isRemoving, setIsRemoving] = useState(false);
+  const [sortBy, setSortBy] = useState(() => {
+    const load = localStorage.getItem("sortBy")
+    return load ? JSON.parse(load) : []
+  })
+  const [filterBy, setFilterBy] = useState(() => {
+    const load = localStorage.getItem("filterBy")
+    return load ? JSON.parse(load) : []
+  })
+  const [filteredTasks, setFilteredTasks] = useState(tasks)
 
-  const [sortBy, setSortBy] = useState("added");
 
   useEffect(()=> {
     localStorage.setItem("tasks",JSON.stringify(tasks))
-  },[tasks]
+    localStorage.setItem("sortBy",JSON.stringify(sortBy))
+    localStorage.setItem("filterBy",JSON.stringify(filterBy))
+  },[tasks, sortBy, filterBy]
   )
 
-  const addTask = (e) => {
-    e.preventDefault()
-    if (!taskName.trim()) return
-    setTasks([{
-      id: Date.now(),
-      taskName,
-      description: description ? description : "",
-      done: false,
-      date: date ? date : "none"
-    },
-    ...tasks
-  ])
-  setTaskName("")
-  setDate("")
-  setDescription("")
-  }
+  useEffect(() => {
+    handleFilterChange(filterBy);
+  }, [tasks, filterBy, sortBy]);
+
   const toggleTask = (id) => {
     setTasks(tasks.map(x => x.id === id ? { ...x, done: !x.done } : x))
+    setFilteredTasks(tasks.map(x => x.id === id ? { ...x, done: !x.done } : x))
+    handleFilterChange(filterBy);
   }
 
   const removeTask = (id) => {
+    console.log("Removing task with id:", id);
     setTasks(tasks.filter(x => x.id !== id))
   }
 
@@ -59,7 +55,6 @@ function App() {
   }
 
   const saveEditing = (id, changedText) => {
-    if (isRemoving) return;
     setTasks(tasks.map(x => x.id === id ? { ...x, taskName: changedText } : x))
     setEditingId(null)
     setEditingText("")
@@ -82,16 +77,30 @@ function App() {
   .sort((a, b) => a.done - b.done);
   };
 
-
-
   const handleSortChange = (newSort) => {
     setSortBy(newSort);
-    setTasks(prevTasks => sortTasks(prevTasks, newSort));
+    setFilteredTasks(prevTasks => sortTasks(prevTasks, newSort));
   };
+
+  const handleFilterChange = (newFilter, baseTasks = tasks) => {
+    setFilterBy(newFilter);
+
+    let filtered = [];
+    if (newFilter === "all") {
+      filtered = baseTasks;
+    } else if (newFilter === "active") {
+      filtered = baseTasks.filter(task => !task.done);
+    } else if (newFilter === "completed") {
+      filtered = baseTasks.filter(task => task.done);
+    }
+
+    setFilteredTasks(sortTasks(filtered, sortBy));
+  };
+
 
   const DivColsetTest = () => {
     return (
-      <div className="colsetTest flex gap-2">
+      <div className="colsetTest flex justify-center gap-2">
         <button onClick={() => handleFilterChange("all")}>All</button>
         <button onClick={() => handleFilterChange("active")}>Active</button>
         <button onClick={() => handleFilterChange("completed")}>Done</button>
@@ -101,6 +110,29 @@ function App() {
 
 
   const FormTaskAdd = ()=>{
+
+  const [taskName, setTaskName] = useState("")
+  const [date, setDate] = useState("")
+  const [description, setDescription] = useState("")
+
+  const addTask = (e) => {
+    e.preventDefault()
+    if (!taskName.trim()) return
+    setTasks([{
+      id: Date.now(),
+      taskName,
+      description: description ? description : "",
+      done: false,
+      date: date ? date : "none"
+    },
+    ...tasks
+  ])
+  handleFilterChange(filterBy);
+  setTaskName("")
+  setDate("")
+  setDescription("")
+  }
+    
     return (
       <div>
         <form onSubmit={addTask}>
@@ -138,7 +170,7 @@ function App() {
     return(
       <div>
         <ul className='flex flex-col'>
-          {tasks.map((x) => (
+          {filteredTasks.map((x) => (
             <li key={x.id} className='flex border p-2 rounded'>
                 {/* <div>
                   <details className='mr-2'>
@@ -164,11 +196,10 @@ function App() {
                       />
                       <button 
                         className="border rounded px-1 ml-2 relative group" 
-                        onMouseDown={() => setIsRemoving(true)}
+                        onMouseDown={(e) => e.preventDefault()} 
                         onClick={() => {
                           removeTask(x.id);
                           setEditingId(null);
-                          setIsRemoving(false);
                         }}
                       >
                         X
@@ -181,7 +212,7 @@ function App() {
                   ) : (
                     <div className="items-center">
                       <span
-                      className={x.done ? " w-full line-through text-gray-400 cursor-pointer" : "cursor-pointer"}
+                      className={x.done ? " w-full line-through text-gray-400 cursor-pointer" : "cursor-pointer max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-[600px] xl:max-w-[800px] 2xl:max-w-[1000px]"}
                       onClick={() => startEditing(x.id, x.taskName)}
                       >
                         {x.taskName}
@@ -233,8 +264,8 @@ function App() {
   return (
     <>
      <div>
-        <DivColsetTest/>
-        <div className='flex flex-row justify-center mb-4'>
+        
+        <div className='flex flex-row justify-center mb-4 mt-4'>
           <h1 className=' text-2xl mr-3'>To do list</h1>
           <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
             <option value="added">Added</option>
@@ -242,12 +273,19 @@ function App() {
           </select>
         </div>
         <FormTaskAdd/>
-      
+        <DivColsetTest/>
         <TaskMap/>
       
-      <div>
-          <button className="border rounded px-2" onClick={() => removeAllCheckedTask()}>Remove complited</button>
-      </div>
+        {tasks.some(x => x.done) && (
+          <div>
+            <button 
+              className="border rounded px-2" 
+              onClick={removeAllCheckedTask}
+            >
+              Remove completed
+            </button>
+          </div>
+      )}
 
      </div>
     </>
