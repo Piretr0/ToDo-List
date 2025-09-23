@@ -33,7 +33,10 @@ const [expandedId, setExpandedId] = useState(null);
         {tasks.map((x) => (
           <div className="flex flex-col border rounded p-2" key={x.id}>
             <div className="flex flex-row">
-              <div className="flex flex-1 justify-center items-center mr-4">
+              <div 
+                className="flex flex-1 justify-center items-center mr-4 cursor-pointer"
+                onClick={(e) => toggleDescription(x.id)}
+              >
                 {editingId === x.id ? (
                   <div className="flex flex-1 items-center">
                     <div className="inline-block relative">
@@ -46,7 +49,7 @@ const [expandedId, setExpandedId] = useState(null);
                       <input
                         ref={inputRef}
                         value={editingText}
-                        onChange={(e) => setEditingText(e.target.value)}
+                        onChange={(e) =>setEditingText(e.target.value)}
                         onBlur={(e) => saveEditing(x.id, editingText)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") saveEditing(x.id, editingText);
@@ -74,8 +77,10 @@ const [expandedId, setExpandedId] = useState(null);
                           ? "w-full line-through text-gray-400 cursor-pointer"
                           : "cursor-pointer"
                       }
-                      // onClick={() => startEditing(x.id, x.taskName)}
-                      onClick={() => toggleDescription(x.id)}
+                      
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditing(x.id, x.taskName)}}
                     >
                       {x.taskName}
                     </span>
