@@ -47,7 +47,7 @@ function App() {
   return (
     <div className="p-2">
       <div className="flex flex-row justify-center mb-4 mt-4">
-        <h1 className=" text-2xl mr-3">To do list</h1>
+        <h1 className="text-2xl mr-3">To do list</h1>
         <SortSelect sortBy={sortBy} setSortBy={setSortBy} />
       </div>
 
@@ -64,7 +64,7 @@ function App() {
         }}
         saveEditing={(id, changedText) => {
           setTasks(saveEditing(tasks, id, changedText));
-          setEditingId(null); // <- po zapisaniu kończymy edycję
+          setEditingId(null);
           setEditingText("");
         }}
         editingId={editingId}
@@ -80,7 +80,6 @@ function App() {
           >
             Remove completed
           </button>
-          <AutoWidthInput/>
           
         </div>
       )}
