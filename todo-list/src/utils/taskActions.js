@@ -17,8 +17,8 @@ export const removeAllCheckedTask = (tasks) => {
 
 // Zapisywanie edytowanego taska
 export const saveEditing = (tasks, id, changedText) => {
-  return tasks.map((x) =>
-    x.id === id ? { ...x, taskName: changedText } : x
+  return tasks.map((task) =>
+    task.id === id ? { ...task, taskName: changedText } : task
   );
 };
 

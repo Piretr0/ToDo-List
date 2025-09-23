@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from "react";
+
 function ShowTask({
   tasks,
   toggleTask,
@@ -8,6 +10,18 @@ function ShowTask({
   editingText,
   setEditingText,
 }) {
+  const [text, setText] = useState("");
+  const spanRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (spanRef.current && inputRef.current) {
+      // mierzymy szerokość spana z tekstem i ustawiamy width inputa
+      const width = spanRef.current.offsetWidth + 20; // +20px padding/margin
+      inputRef.current.style.width = width + "px";
+    }
+  }, [editingText]);
+
   return (
     <div>
       <ul className="flex flex-col">
@@ -16,17 +30,26 @@ function ShowTask({
             <div className="flex flex-1 justify-center items-center mr-4">
               {editingId === x.id ? (
                 <div className="flex flex-1 items-center">
-                  <input
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onBlur={(e) => saveEditing(x.id, editingText)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") saveEditing(x.id, editingText);
-                      if (e.key === "Escape") setEditingText("");
-                    }}
-                    autoFocus
-                    className="border rounded px-1 w-full min-w-[120px]"
-                  />
+                  <div className="inline-block relative">
+                    <span
+                      ref={spanRef}
+                      className="absolute invisible whitespace-pre text-base font-sans"
+                    >
+                      {editingText || " "} {/* zawsze coś, żeby width było mierzalne */}
+                    </span>
+                    <input
+                      ref={inputRef}
+                      value={editingText}
+                      onChange={(e) => setEditingText(e.target.value)}
+                      onBlur={(e) => saveEditing(x.id, editingText)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveEditing(x.id, editingText);
+                        if (e.key === "Escape") setEditingText("");
+                      }}
+                      autoFocus
+                      className="border rounded text-base px-1 w-full min-w-[120px]"
+                    />
+                  </div>
                   <button
                     className="border rounded px-1 ml-2 relative group"
                     onClick={() => removeTask(x.id)}

@@ -15,6 +15,8 @@ import {
   saveEditing,
 } from "./utils/taskActions";
 
+import AutoWidthInput from "./components/AutoWidthInput";
+
 function App() {
   const [tasks, setTasks] = useState(() => {
     const load = localStorage.getItem("tasks");
@@ -60,9 +62,11 @@ function App() {
           setEditingId(id);
           setEditingText(currentText);
         }}
-        saveEditing={(id, changedText) =>
-          setTasks(saveEditing(tasks, id, changedText))
-        }
+        saveEditing={(id, changedText) => {
+          setTasks(saveEditing(tasks, id, changedText));
+          setEditingId(null); // <- po zapisaniu kończymy edycję
+          setEditingText("");
+        }}
         editingId={editingId}
         editingText={editingText}
         setEditingText={setEditingText}
@@ -76,6 +80,8 @@ function App() {
           >
             Remove completed
           </button>
+          <AutoWidthInput/>
+          
         </div>
       )}
     </div>
