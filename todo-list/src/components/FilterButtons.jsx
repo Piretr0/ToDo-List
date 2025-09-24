@@ -1,14 +1,16 @@
 function FilterButtons({ filterBy, setFilterBy }) {
 
   const options = [
-    { buttonFilter: "all", label: "All" },
-    { buttonFilter: "active", label: "Active" },
-    { buttonFilter: "completed", label: "Done" },
+    { buttonFilter: "all", label: "all" },
+    { buttonFilter: "active", label: "active" },
+    { buttonFilter: "completed", label: "done" },
   ];
 
-  const getClass = (buttonFilter) => 
-    `${filterBy === buttonFilter ? "text-yellow-300" : ""} cursor-pointer`;
-
+  const getClass = (value) =>
+    `cursor-pointer capitalize ${
+      filterBy === value ? "text-yellow-300" : "text-white"
+    }`;
+    
   return (
     <div className="colsetTest flex justify-center gap-2">
        {options.map((opt) => (

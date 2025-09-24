@@ -96,8 +96,7 @@ const [expandedId, setExpandedId] = useState(null);
                       className={`text-sm ml-2 ${
                         x.done
                           ? "text-gray-500"
-                          : new Date(x.date) <
-                            new Date(new Date().toISOString().slice(0, 10))
+                          : new Date(x.date) < new Date(new Date().toISOString().slice(0, 10))
                           ? "text-red-500"
                           : "text-green-500"
                       }`}

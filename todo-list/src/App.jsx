@@ -37,7 +37,7 @@ function App() {
 
 
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    localStorage.setItem("tasks", tasks ? JSON.stringify(tasks) : []);
     localStorage.setItem("sortBy", JSON.stringify(sortBy));
     localStorage.setItem("filterBy", JSON.stringify(filterBy));
   }, [tasks, sortBy, filterBy]);
@@ -45,8 +45,8 @@ function App() {
   const filteredTasks = sortTasks(filterTasks(tasks, filterBy), sortBy);
 
   return (
-    <div className="p-2">
-      <div className="flex flex-row justify-center mb-4 mt-4">
+    <div className="m-1 container">
+      <div className="flex w-full flex-row justify-center mb-4 mt-4">
         <h1 className="text-2xl mr-3">To do list</h1>
         <SortSelect sortBy={sortBy} setSortBy={setSortBy} />
       </div>

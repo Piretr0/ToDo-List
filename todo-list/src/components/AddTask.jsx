@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { addTask } from "../utils/taskActions";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
 
 function AddTask({ tasks, setTasks }) {
   const [taskName, setTaskName] = useState("");
@@ -24,30 +27,41 @@ function AddTask({ tasks, setTasks }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="flex mb-2 gap-2">
-        <input
-          value={taskName}
-          placeholder="Name task"
-          onChange={(e) => setTaskName(e.target.value)}
+    <form 
+      className="w-full" 
+      onSubmit={handleSubmit}
+    >
+      <div className="flex items-center mb-2 gap-2">
+      {/* Pole na nazwę */}
+      <input
+        value={taskName}
+        placeholder="Name task"
+        onChange={(e) => setTaskName(e.target.value)}
+        className="flex-1 border p-1 rounded min-w-0"
+        required
+      />
+
+      {/* Picker daty */}
+      <div className="w-[95px]">
+        <DatePicker
+          selected={date ? new Date(date) : null}
+          onChange={(value) => setDate(format(value, "yyyy-MM-dd"))} // format z date-fns
+          dateFormat="yyyy-MM-dd"
           className="w-full border p-1 rounded"
-          required
-        />
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border p-0 rounded w-[110px]"
+          placeholderText="Select date"
+          popperPlacement="bottom-end"
+          popperClassName="z-50"
         />
       </div>
-      <div className="flex full">
+    </div>
+      <div className="flex full gap-2">
         <textarea
           placeholder="Description ..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full border p-1 rounded"
+          className="flex-1 border p-1 rounded"
         />
-        <button className="border px-3 py-1 rounded bg-blue-500 text-white ml-2">
+        <button className="border px-3 rounded bg-blue-500 text-white ">
           Add
         </button>
       </div>
